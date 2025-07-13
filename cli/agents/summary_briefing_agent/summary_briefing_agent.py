@@ -12,13 +12,14 @@ load_dotenv()
 
 # Environment variables
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+JWT_TOKEN = os.environ.get("JWT_TOKEN")
 
 openai_client = OpenAI(
     api_key=GOOGLE_API_KEY
 ) if GOOGLE_API_KEY else None
 
 session = GenAISession(
-    jwt_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MzMxNTIwNC0wOGRmLTQyMGMtYjY0ZS00ZjAyZTNmMTI1NTkiLCJleHAiOjI1MzQwMjMwMDc5OSwidXNlcl9pZCI6ImM3MWUyZmQwLTc0ODMtNDI5MC05YzFlLWEyNTc1OTA0Y2VjNyJ9.xMQPq6i--c--81Td41wWrz6EwlAeXkoahvLhfBfVcWY" # noqa: E501
+    jwt_token=JWT_TOKEN
 )
 
 

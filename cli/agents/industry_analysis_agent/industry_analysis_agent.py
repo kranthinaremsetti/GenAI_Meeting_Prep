@@ -11,9 +11,10 @@ load_dotenv()
 
 # Environment variables
 EXA_API_KEY = os.environ.get("EXA_API_KEY")
+JWT_TOKEN = os.environ.get("JWT_TOKEN")
 
 session = GenAISession(
-    jwt_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMWE1MzM5ZC04MTMwLTQ0ZWQtOTJmOS00NmQ2NWFkNjg1ZmYiLCJleHAiOjI1MzQwMjMwMDc5OSwidXNlcl9pZCI6ImM3MWUyZmQwLTc0ODMtNDI5MC05YzFlLWEyNTc1OTA0Y2VjNyJ9.qJtI9QtS3-iTPv0pL_iCwgyvCHOfXFh0LrmU1rYVfIA" # noqa: E501
+    jwt_token=JWT_TOKEN
 )
 
 

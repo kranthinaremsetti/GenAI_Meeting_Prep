@@ -11,9 +11,10 @@ load_dotenv()
 
 # Environment variables
 SERPER_API_KEY = os.environ.get("SERPER_API_KEY")
+JWT_TOKEN = os.environ.get("JWT_TOKEN")
 
 session = GenAISession(
-    jwt_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMGExOTg2OC0yNzQ4LTQ4MDQtOTJmOS04ZmViN2VlYzAyYjYiLCJleHAiOjI1MzQwMjMwMDc5OSwidXNlcl9pZCI6ImM3MWUyZmQwLTc0ODMtNDI5MC05YzFlLWEyNTc1OTA0Y2VjNyJ9.lR4HDyyQ9TbgwfkRNyeMX_QlX13gZJ9KjcRzrp2OBdc" # noqa: E501
+    jwt_token=JWT_TOKEN
 )
 
 
