@@ -4,7 +4,7 @@ from datetime import datetime
 from genai_session.session import GenAISession
 
 session = GenAISession(
-    jwt_token=""
+    jwt_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiNjE5M2U5Yy1mMGU5LTRhNDQtOWRhYS05ZGFiM2VkZjY0NzQiLCJleHAiOjI1MzQwMjMwMDc5OSwidXNlcl9pZCI6ImM3MWUyZmQwLTc0ODMtNDI5MC05YzFlLWEyNTc1OTA0Y2VjNyJ9.S6O_9RowRtyVgRFKlkY19kSfkvuAoHLB1aVx_AaDsgM"
 )
 
 

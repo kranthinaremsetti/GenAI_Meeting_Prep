@@ -1,0 +1,10 @@
+[project]
+name = "meeting-research-agent"
+version = "0.1.0"
+description = "Research Agent for Meeting Preparation - conducts thorough research on meeting participants"
+requires-python = ">=3.12"
+dependencies = [
+    "genai-protocol>=1.0.9",
+    "python-dotenv>=1.1.0",
+    "requests>=2.32.3",
+]
