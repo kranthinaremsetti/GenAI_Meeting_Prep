@@ -1,6 +1,8 @@
 # 🤖 GenAI Meeting Preparation Agents
 
 A comprehensive multi-agent system for automated meeting preparation, combining real-time research, industry analysis, strategic planning, and executive briefing compilation.
+(Used GenAI OS Protocol for the project.
+ Used Notion for writing the document. )
 
 ## 📋 Table of Contents
 
