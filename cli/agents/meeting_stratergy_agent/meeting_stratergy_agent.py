@@ -5,7 +5,7 @@ from typing import Any, Annotated
 
 from dotenv import load_dotenv
 from genai_session.session import GenAISession
-from openai import OpenAI
+import google.generativeai as genai
 
 load_dotenv()
 
@@ -13,9 +13,12 @@ load_dotenv()
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 JWT_TOKEN = os.environ.get("JWT_TOKEN")
 
-openai_client = OpenAI(
-    api_key=GOOGLE_API_KEY
-) if GOOGLE_API_KEY else None
+# Configure Google Gemini instead of OpenAI
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
+    gemini_model = genai.GenerativeModel('gemini-pro')
+else:
+    gemini_model = None
 
 session = GenAISession(
     jwt_token=JWT_TOKEN
@@ -49,8 +52,8 @@ async def develop_meeting_strategy(
             meeting_context, meeting_objective, research_data, industry_analysis
         )
         
-        # Generate AI-enhanced talking points if OpenAI is available
-        if openai_client:
+        # Generate AI-enhanced talking points if Google Gemini is available
+        if gemini_model:
             enhanced_strategy = await enhance_strategy_with_ai(
                 meeting_context, meeting_objective, strategy_components
             )
@@ -150,7 +153,7 @@ async def generate_strategy_components(context: str, objective: str, research: s
 
 
 async def enhance_strategy_with_ai(context: str, objective: str, components: dict) -> dict:
-    """Use OpenAI to enhance strategy components"""
+    """Use Google Gemini to enhance strategy components"""
     try:
         prompt = f"""
         Given this meeting context: {context}
@@ -164,13 +167,8 @@ async def enhance_strategy_with_ai(context: str, objective: str, components: dic
         Format as JSON with keys: advanced_conversation_starters, strategic_industry_questions, objection_responses
         """
         
-        response = openai_client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="gpt-4o-mini",
-            temperature=0.7
-        )
-        
-        ai_content = response.choices[0].message.content
+        response = gemini_model.generate_content(prompt)
+        ai_content = response.text
         
         return {
             "ai_enhanced_content": ai_content,

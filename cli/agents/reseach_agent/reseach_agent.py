@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 from typing import Any, Annotated
@@ -53,7 +52,8 @@ async def research_meeting_participants(
                 "experience": [],
                 "education": [],
                 "company_info": "",
-                "linkedin_profile": "",
+                "linkedin_profile": {},
+                "linkedin_url": "",
                 "key_achievements": [],
                 "industry_connections": []
             }
@@ -72,7 +72,9 @@ async def research_meeting_participants(
                         search_result = await perform_serper_search(query)
                         
                         if "LinkedIn" in query:
-                            participant_data["linkedin_profile"] = extract_linkedin_info(search_result)
+                            linkedin_info = extract_linkedin_info(search_result)
+                            participant_data["linkedin_profile"] = linkedin_info
+                            participant_data["linkedin_url"] = linkedin_info.get("url", "N/A")
                         elif "experience" in query:
                             participant_data["experience"] = extract_experience_info(search_result)
                         elif "education" in query:
@@ -90,7 +92,13 @@ async def research_meeting_participants(
                     "experience": [f"Experience research required for {participant}"],
                     "education": [f"Education background research needed for {participant}"],
                     "company_info": f"Company information research required for {participant}",
-                    "linkedin_profile": f"LinkedIn profile research needed for {participant}",
+                    "linkedin_profile": {
+                        "url": f"LinkedIn URL search needed for {participant}",
+                        "title": "Research required",
+                        "snippet": "LinkedIn profile research needed",
+                        "profile_summary": f"LinkedIn profile research needed for {participant}"
+                    },
+                    "linkedin_url": f"LinkedIn URL search needed for {participant}",
                     "key_achievements": [f"Achievement research required for {participant}"],
                     "industry_connections": [f"Network research needed for {participant}"]
                 })
@@ -139,13 +147,23 @@ async def perform_serper_search(query: str) -> dict:
     return response.json()
 
 
-def extract_linkedin_info(search_result: dict) -> str:
+def extract_linkedin_info(search_result: dict) -> dict:
     """Extract LinkedIn information from search results"""
     if "organic" in search_result:
         for result in search_result["organic"]:
             if "linkedin.com" in result.get("link", ""):
-                return f"LinkedIn Profile: {result.get('title', 'N/A')} - {result.get('snippet', 'N/A')}"
-    return "LinkedIn profile information not found"
+                return {
+                    "url": result.get("link", "N/A"),
+                    "title": result.get("title", "N/A"),
+                    "snippet": result.get("snippet", "N/A"),
+                    "profile_summary": f"LinkedIn Profile: {result.get('title', 'N/A')} - {result.get('snippet', 'N/A')}"
+                }
+    return {
+        "url": "LinkedIn URL not found",
+        "title": "N/A", 
+        "snippet": "N/A",
+        "profile_summary": "LinkedIn profile information not found"
+    }
 
 
 def extract_experience_info(search_result: dict) -> list:
@@ -181,7 +199,7 @@ async def main():
     print("🔍 Meeting Research Agent Started")
     print("Ready to conduct thorough research on meeting participants")
     if not SERPER_API_KEY:
-        print("⚠️  SERPER_API_KEY not set - running in demo mode")
+        print("⚠  SERPER_API_KEY not set - running in demo mode")
     await session.process_events()
 
 

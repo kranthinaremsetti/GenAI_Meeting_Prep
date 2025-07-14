@@ -6,7 +6,7 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 from genai_session.session import GenAISession
-from openai import OpenAI
+import google.generativeai as genai
 
 load_dotenv()
 
@@ -14,9 +14,12 @@ load_dotenv()
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 JWT_TOKEN = os.environ.get("JWT_TOKEN")
 
-openai_client = OpenAI(
-    api_key=GOOGLE_API_KEY
-) if GOOGLE_API_KEY else None
+# Configure Google Gemini instead of OpenAI
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
+    gemini_model = genai.GenerativeModel('gemini-pro')
+else:
+    gemini_model = None
 
 session = GenAISession(
     jwt_token=JWT_TOKEN
@@ -25,7 +28,7 @@ session = GenAISession(
 
 @session.bind(
     name="compile_meeting_briefing",
-    description="Compiles a comprehensive 5-part structured summary for meeting preparation, combining findings from research, industry analysis, and strategic planning."
+    description="Compiles a comprehensive structured summary for meeting preparation, combining findings from research, industry analysis, and strategic planning."
 )
 async def compile_meeting_briefing(
     agent_context,
@@ -82,8 +85,8 @@ async def compile_meeting_briefing(
             }
         }
         
-        # Generate AI-enhanced briefing if OpenAI is available
-        if openai_client:
+        # Generate AI-enhanced briefing if Google Gemini is available
+        if gemini_model:
             ai_enhanced_content = await generate_ai_briefing_enhancement(
                 meeting_context, meeting_objective
             )
@@ -239,7 +242,7 @@ def generate_strategic_recommendations(context: str, objective: str, research: s
 
 
 async def generate_ai_briefing_enhancement(context: str, objective: str) -> str:
-    """Generate AI-enhanced briefing content"""
+    """Generate AI-enhanced briefing content using Google Gemini"""
     try:
         prompt = f"""
         Create additional strategic insights for this meeting:
@@ -254,13 +257,8 @@ async def generate_ai_briefing_enhancement(context: str, objective: str) -> str:
         Keep response concise and professional.
         """
         
-        response = openai_client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="gpt-4o-mini",
-            temperature=0.7
-        )
-        
-        return response.choices[0].message.content
+        response = gemini_model.generate_content(prompt)
+        return response.text
         
     except Exception as e:
         return f"AI enhancement not available: {str(e)}"
