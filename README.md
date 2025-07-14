@@ -1,171 +1,471 @@
-# 🐍 GenAI Agents Infrastructure
+# 🤖 GenAI Meeting Preparation Agents
 
-This repository provides the complete infrastructure for running GenAI agents, including:
+A comprehensive multi-agent system for automated meeting preparation, combining real-time research, industry analysis, strategic planning, and executive briefing compilation.
 
-* Backend
-* Router
-* Master Agents
-* PostgreSQL Database
-* Frontend
-* CLI
-* Redis
-* Celery
+## 📋 Table of Contents
 
-## 📎 Repository Link
+- [Overview](#overview)
+- [Agent Architecture](#agent-architecture)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Agent Details](#agent-details)
+- [API Integrations](#api-integrations)
+- [Troubleshooting](#troubleshooting)
+- [Development](#development)
 
-👉 [GitHub Repository](https://github.com/genai-works-org/genai-agentos)
+## 🎯 Overview
 
-## 🛠️ Readme Files
+This system consists of four specialized AI agents that work together to create comprehensive meeting briefings:
 
-* [CLI](cli/README.md)
-* [Backend](backend/README.md)
-* [Master Agents](master-agent/README.md)
-* [Router](router/README.md)
-* [Frontend](frontend/README.md)
+1. **Research Agent** - Gathers participant LinkedIn profiles and professional backgrounds
+2. **Industry Analysis Agent** - Analyzes market trends, challenges, and opportunities
+3. **Meeting Strategy Agent** - Develops talking points and strategic approaches
+4. **Summary Briefing Agent** - Compiles everything into executive briefing documents
 
-## 📄️ License
-* [MIT](LICENSE)
+## 🏗️ Agent Architecture
 
-
-## 🧠 Supported Agent Types
-
-The system supports multiple kinds of Agents:
-
-| Agent Type       | Description                                                                                   |
-|------------------|-----------------------------------------------------------------------------------------------|
-| **GenAI Agents** | Connected via [`genai-protocol`](https://pypi.org/project/genai-protocol/) library interface. |
-| **MCP Servers**  | MCP (Model Context Protocol) servers can be added by pasting their URL in the UI.             |
-| **A2A Servers**  | A2A (Agent to Agent Protocol) servers can be added by pasting their URL in the UI.            |
-
----
-
-## 📦 Prerequisites
-
-Make sure you have the following installed:
-
-* [Docker](https://www.docker.com/)
-* [Docker Compose](https://docs.docker.com/compose/)
-* [`make`](https://www.gnu.org/software/make/) (optional)
-
-  * macOS: `brew install make`
-  * Linux: `sudo apt-get install make`
-
-## 🚀 Local Setup
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/genai-works-org/genai-agentos.git
-   cd genai-agentos/
-   ```
-
-2. Create a `.env` file by copying the example (can be empty and customized later):
-
-   ```bash
-   cp .env-example .env
-   ```
-
-   * A `.env` file **should be present** for configuration.
-   * All variables in `.env-example` are commented.
-     You can customize any environment setting by **uncommenting** the relevant line and providing a new value.
-
-3. Start Docker desktop and ensure it is running.
-
-4. Start the infrastructure:
-
-   ```bash
-   make up
-   # or alternatively
-   docker compose up
-   ```
-
-5. After startup:
-
-   * Frontend UI: [http://localhost:3000/](http://localhost:3000/)
-   * Swagger API Docs: [http://localhost:8000/docs#/](http://localhost:8000/docs#/)
-
-## 👾 Supported Providers and Models
-* OpenAI: gpt-4o
-
-## 🌐 Ngrok Setup (Optional)
-
-Ngrok can be used to expose the local WebSocket endpoint.
-
-1. Install Ngrok:
-
-   * macOS (Homebrew): `brew install ngrok/ngrok/ngrok`
-   * Linux: `sudo snap install ngrok`
-
-2. Authenticate Ngrok:
-
-   * Sign up or log in at [ngrok dashboard](https://dashboard.ngrok.com).
-   * Go to the **"Your Authtoken"** section and copy the token.
-   * Run the command:
-
-     ```bash
-     ngrok config add-authtoken <YOUR_AUTH_TOKEN>
-     ```
-
-3. Start a tunnel to local port 8080:
-
-   ```bash
-   ngrok http 8080
-   ```
-
-4. Copy the generated WebSocket URL and update the `ws_url` field in:
-
-   ```
-   genai_session.session.GenAISession
-   ```
-
----
-
-## 🤖GenAI Agent registration quick start (For more data check [CLI](cli/README.md))
-```bash
-cd cli/
-
-python cli.py signup -u <username> # Register a new user, also available in [UI](http://localhost:3000/)
-
-python cli.py login -u <username> -p <password> # Login to the system, get JWT user token
-
-python cli.py register_agent --name <agent_name> --description <agent_description>
-
-cd agents/
-
-# Run the agent
-uv run python <agent_name>.py # or alternatively 
-python <agent_name>.py 
+```
+cli/agents/
+├── research_agent/                 # Participant research using Serper API
+│   ├── reseach_agent.py           # Main agent code
+│   ├── pyproject.toml             # Dependencies
+│   └── uv.lock                    # Lock file
+├── industry_analysis_agent/        # Industry trends using EXA API
+│   ├── industry_analysis_agent.py # Main agent code
+│   ├── pyproject.toml             # Dependencies
+│   └── uv.lock                    # Lock file
+├── meeting_strategy_agent/         # Strategic planning using Google Gemini
+│   ├── meeting_stratergy_agent.py # Main agent code
+│   ├── pyproject.toml             # Dependencies
+│   └── uv.lock                    # Lock file
+└── summary_briefing_agent/         # Final compilation using Google Gemini
+    ├── summary_briefing_agent.py  # Main agent code
+    ├── pyproject.toml             # Dependencies
+    └── uv.lock                    # Lock file
 ```
 
-## 💎 Environment Variables
+## ✨ Features
 
-| Variable                    | Description                                                          | Example / Default                                                                       |
-|-----------------------------|----------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| `FRONTEND_PORT`             | Port to start a frontend                                             | `3000` - default. Can be changed by run in terminal ` source FRONTEND_PORT=<your_port>` |
-| `ROUTER_WS_URL`             | WebSocket URL for the `router` container                             | `ws://genai-router:8080/ws` - host is either `localhost` or `router` container name     |
-| `SECRET_KEY`                | Secret key for cryptographic operations - JWT/ LLM config encryption | `$(openssl rand -hex 32)`                                                               |
-| `POSTGRES_HOST`             | PostgreSQL Host                                                      | `genai-postgres`                                                                        |
-| `POSTGRES_USER`             | PostgreSQL Username                                                  | `postgres`                                                                              |
-| `POSTGRES_PASSWORD`         | PostgreSQL Password                                                  | `postgres`                                                                              |
-| `POSTGRES_DB`               | PostgreSQL Database Name                                             | `postgres`                                                                              |
-| `POSTGRES_PORT`             | PostgreSQL Port                                                      | `5432`                                                                                  |
-| `DEBUG`                     | Enable/disable debug mode - Server/ ORM logging                      | `True` / `False`                                                                        |
-| `MASTER_AGENT_API_KEY`      | API key for the Master Agent - internal identifier                   | `e1adc3d8-fca1-40b2-b90a-7b48290f2d6a::master_server_ml`                                |
-| `MASTER_BE_API_KEY`         | API key for the Master Backend - internal identifier                 | `7a3fd399-3e48-46a0-ab7c-0eaf38020283::master_server_be`                                |
-| `BACKEND_CORS_ORIGINS`      | Allowed CORS origins for the `backend`                               | `["*"]`, `["http://localhost"]`                                                         |
-| `DEFAULT_FILES_FOLDER_NAME` | Default folder for file storage - Docker file volume path            | `/files`                                                                                |
-| `CLI_BACKEND_ORIGIN_URL`    | `backend` URL for CLI access                                         | `http://localhost:8000`                                                                 |
+### 🔍 Research Agent
+- **LinkedIn Profile Extraction**: Automated LinkedIn URL and profile data retrieval
+- **Professional Background Research**: Experience, education, and company information
+- **Structured Data Output**: Organized participant profiles with contact information
+- **Fallback Mode**: Graceful degradation when APIs are unavailable
+
+### 🏭 Industry Analysis Agent
+- **Real-time Market Data**: Live industry trends via EXA API
+- **Intelligent Context Detection**: Automatic industry identification from meeting context
+- **Comprehensive Analysis**: Trends, challenges, opportunities, and competitive landscape
+- **Investment Outlook**: Market positioning and risk assessment
+- **Multi-Industry Support**: AI, Cloud Computing, Edge Computing, Technology, Finance, Healthcare
+
+### 🎯 Meeting Strategy Agent
+- **AI-Enhanced Strategy**: Google Gemini-powered strategic recommendations
+- **Talking Points Generation**: Context-aware discussion topics
+- **Question Development**: Strategic questions for productive meetings
+- **Objection Handling**: Prepared responses to potential concerns
+- **Meeting Flow Optimization**: Timing and structure recommendations
+
+### 📋 Summary Briefing Agent
+- **5-Part Executive Briefing**: Professional document compilation
+- **Cross-Agent Integration**: Combines all agent outputs seamlessly
+- **AI Enhancement**: Google Gemini integration for sophisticated insights
+- **Action Items**: Clear next steps and follow-up recommendations
+- **Quality Scoring**: Briefing completeness assessment
+
+## 📋 Prerequisites
+
+- **Python 3.12+**
+- **GenAI OS Platform** access
+- **API Keys** (optional but recommended):
+  - Serper API key (for LinkedIn research)
+  - EXA API key (for industry analysis)
+  - Google API key (for AI enhancements)
+
+## 🚀 Installation
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/kranthinaremsetti/GenAI_Meeting_Prep.git
+cd GenAI_Meeting_Prep/cli
+```
+
+### 2. Install Dependencies
+```bash
+# Install main CLI dependencies
+pip install -r requirements.txt
+
+# Or use uv (recommended)
+uv sync
+```
+
+### 3. Set Up Virtual Environments (Optional)
+Each agent can have its own virtual environment:
+```bash
+cd agents/research_agent
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -e .
+
+# Repeat for other agents...
+```
+
+## ⚙️ Configuration
+
+### 1. Environment Variables
+Create a `.env` file in the project root:
+
+```env
+# GenAI Session (Required)
+JWT_TOKEN=your_genai_jwt_token
+
+# API Keys (Optional but recommended)
+SERPER_API_KEY=your_serper_api_key
+EXA_API_KEY=your_exa_api_key
+GOOGLE_API_KEY=your_google_api_key
+```
+
+### 2. API Key Setup
+
+#### Serper API (LinkedIn Research)
+1. Visit [serper.dev](https://serper.dev)
+2. Sign up and get your API key
+3. Add to `.env` file
+
+#### EXA API (Industry Analysis)
+1. Visit [exa.ai](https://exa.ai)
+2. Create account and get API key
+3. Add to `.env` file
+
+#### Google API (AI Enhancement)
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create API key for Gemini
+3. Add to `.env` file
+
+## 🎮 Usage
+
+### Method 1: CLI Command
+```bash
+# Start all agents
+python cli.py run_agents
+
+# Register individual agents (if needed)
+python cli.py register_agent --name "Research Agent" --description "LinkedIn research agent"
+```
+
+### Method 2: Direct Function Calls
+```python
+# In GenAI OS chat interface
+research_meeting_participants(
+    participants="John Doe, Jane Smith",
+    meeting_context="Strategic AI investments discussion"
+)
+
+analyze_meeting_industry_trends(
+    participants="John Doe, Jane Smith", 
+    meeting_context="AI investments in cloud infrastructure"
+)
+
+develop_meeting_strategy(
+    meeting_context="AI investment meeting",
+    meeting_objective="Identify partnership opportunities"
+)
+
+compile_meeting_briefing(
+    meeting_context="AI investment discussion",
+    meeting_objective="Partnership opportunities",
+    research_findings="...",
+    industry_analysis="...",
+    meeting_strategy="..."
+)
+```
+
+### Method 3: Natural Language Prompt
+```
+Please use my meeting preparation agents to create a comprehensive briefing:
+
+Participants: Kranthi Naremsetti, Gnana Saketh Periyala, Veda Priya Rapeti
+Meeting Context: Strategic AI investments in cloud infrastructure, LLM integration, and edge computing
+Meeting Objective: Identify partnership opportunities and create investment pitch
+
+Please call:
+- research_meeting_participants for LinkedIn research
+- analyze_meeting_industry_trends for industry analysis  
+- develop_meeting_strategy for talking points
+- compile_meeting_briefing for final document
+```
+
+## 🔧 Agent Details
+
+### Research Agent (`research_agent.py`)
+
+**Function**: `research_meeting_participants(participants, meeting_context)`
+
+**Input**:
+```python
+participants = "Kranthi Naremsetti, Gnana Saketh Periyala"
+meeting_context = "AI investment strategy meeting"
+```
+
+**Output**:
+```json
+{
+    "research_findings": [
+        {
+            "name": "Kranthi Naremsetti",
+            "linkedin_url": "https://linkedin.com/in/kranthi-naremsetti",
+            "linkedin_profile": {
+                "url": "https://linkedin.com/in/kranthi-naremsetti",
+                "title": "Profile Title",
+                "snippet": "Professional summary",
+                "profile_summary": "Complete profile info"
+            },
+            "experience": ["Experience details..."],
+            "education": ["Education background..."],
+            "company_info": "Company information"
+        }
+    ],
+    "recommendations": ["Meeting preparation suggestions..."]
+}
+```
+
+### Industry Analysis Agent (`industry_analysis_agent.py`)
+
+**Function**: `analyze_meeting_industry_trends(participants, meeting_context)`
+
+**Detected Industries**: AI, Cloud Computing, Edge Computing, Technology, Investment Banking, Healthcare, Financial Services
+
+**Output**:
+```json
+{
+    "industry_analyses": {
+        "Artificial Intelligence": {
+            "current_trends": ["AI trends..."],
+            "market_challenges": ["Challenges..."],
+            "growth_opportunities": ["Opportunities..."],
+            "competitive_landscape": ["Competitors..."],
+            "investment_outlook": "Market outlook",
+            "risk_factors": ["Risk factors..."]
+        }
+    },
+    "cross_industry_insights": ["Insights..."],
+    "meeting_specific_recommendations": {
+        "talking_points": ["Discussion topics..."],
+        "questions_to_ask": ["Strategic questions..."]
+    }
+}
+```
+
+### Meeting Strategy Agent (`meeting_stratergy_agent.py`)
+
+**Function**: `develop_meeting_strategy(meeting_context, meeting_objective, research_data, industry_analysis)`
+
+**Output**:
+```json
+{
+    "strategy_components": {
+        "talking_points": ["Strategic discussion points..."],
+        "strategic_questions": ["Questions to ask..."],
+        "conversation_starters": ["Ice breakers..."],
+        "value_propositions": ["Value statements..."],
+        "potential_objections": [
+            {
+                "objection": "Timeline concerns",
+                "response": "Suggested response..."
+            }
+        ]
+    },
+    "meeting_flow_suggestions": ["Meeting structure..."],
+    "contingency_plans": {"scenario": ["backup plans..."]}
+}
+```
+
+### Summary Briefing Agent (`summary_briefing_agent.py`)
+
+**Function**: `compile_meeting_briefing(meeting_context, meeting_objective, ...)`
+
+**Output**: Complete 5-part executive briefing with:
+- Executive Summary
+- Participant Profiles
+- Industry Analysis
+- Strategic Talking Points
+- Recommendations & Action Items
+
+## 🔌 API Integrations
+
+### Serper API (Google Search)
+- **Purpose**: LinkedIn profile and professional background research
+- **Rate Limits**: Check [serper.dev](https://serper.dev) pricing
+- **Fallback**: Structured placeholder data when unavailable
+
+### EXA API (Semantic Search)
+- **Purpose**: Real-time industry trends and market analysis
+- **Features**: Neural search, auto-prompting, content extraction
+- **Fallback**: Generic industry insights when unavailable
+
+### Google Gemini API
+- **Purpose**: AI-enhanced strategic insights and recommendations
+- **Model**: `gemini-pro`
+- **Fallback**: Standard strategic framework when unavailable
 
 ## 🛠️ Troubleshooting
 
-### ❓ MCP server or A2A card URL could not be accessed by the genai-backend
-✅ If your MCP server or A2A card is hosted on your local machine, make sure to change the host name from `http://localhost:<your_port>` to `http://host.docker.internal:<your_port>` and try again.
+### Common Issues
 
-🔎 **Also make sure to pass the full url of your MCP server or A2A card, such as - `http://host.docker.internal:8000/mcp` for MCP or `http://host.docker.internal:10002` for A2A**
+#### 1. Agents Not Starting
+```bash
+# Check virtual environments
+ls -la agents/*/venv  # Should exist for each agent
 
-⚠️ No need to specify `/.well-known/agent.json` for your A2A card as `genai-backend` will do it for you!
+# Verify dependencies
+cd agents/research_agent
+pip list | grep genai-protocol
+```
 
-### ❓ My MCP server with valid host cannot be accessed by the genai-backend 
-✅ Make sure your MCP server supports `streamable-http` protocol and is remotely accessible.Also make sure that you're specifiying full URL of your server, like - `http://host.docker.internal:8000/mcp`
+#### 2. API Errors
+```bash
+# Verify environment variables
+echo $SERPER_API_KEY
+echo $EXA_API_KEY
+echo $GOOGLE_API_KEY
 
-⚠️ Side note: `sse` protocol is officially deprecated by MCP protocol devs, `stdio` protocol is not supported yet, but stay tuned for future announcements!
+# Check API key validity
+curl -H "X-API-KEY: $SERPER_API_KEY" https://google.serper.dev/search
+```
+
+#### 3. Import Errors
+```bash
+# Reinstall dependencies
+cd agents/research_agent
+pip install -e .
+```
+
+#### 4. GenAI Session Issues
+```bash
+# Verify JWT token
+echo $JWT_TOKEN
+
+# Check GenAI platform connectivity
+python -c "from genai_session.session import GenAISession; print('OK')"
+```
+
+
+## 🚧 Development
+
+### Adding New Agents
+
+1. **Create Agent Folder**:
+```bash
+mkdir agents/new_agent
+cd agents/new_agent
+```
+
+2. **Create pyproject.toml**:
+```toml
+[project]
+name = "new-agent"
+version = "0.1.0"
+description = "Description of new agent"
+requires-python = ">=3.12"
+dependencies = [
+    "genai-protocol>=1.0.9",
+    "python-dotenv>=1.1.0",
+]
+```
+
+3. **Create Agent Code**:
+```python
+import asyncio
+from genai_session.session import GenAISession
+
+session = GenAISession(jwt_token=JWT_TOKEN)
+
+@session.bind(
+    name="new_agent_function",
+    description="Description of what this agent does"
+)
+async def new_agent_function(agent_context, param1, param2):
+    # Agent logic here
+    return {"result": "data"}
+
+if __name__ == "__main__":
+    asyncio.run(session.process_events())
+```
+
+### Testing Agents
+
+```bash
+# Test individual agents
+cd agents/research_agent
+python reseach_agent.py
+
+# Test with sample data
+python -c "
+import asyncio
+from reseach_agent import research_meeting_participants
+# Add test code here
+"
+```
+
+### Code Quality
+
+```bash
+# Format code
+black agents/
+isort agents/
+
+# Type checking
+mypy agents/
+
+# Linting
+pylint agents/
+```
+
+## 📚 Additional Resources
+
+- [GenAI Protocol Documentation](https://docs.genai.com)
+- [Serper API Documentation](https://serper.dev/docs)
+- [EXA API Documentation](https://docs.exa.ai)
+- [Google Gemini API Documentation](https://ai.google.dev)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/new-agent`
+3. Commit changes: `git commit -am 'Add new agent'`
+4. Push to branch: `git push origin feature/new-agent`
+5. Submit pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+
+## 🙋‍♂️ Support
+
+For support and questions:
+- Create an issue on GitHub
+- Documentation: (https://www.notion.so/AI-Prep-Meeting-230d9ca16ad080efa788c1974fe20e45?source=copy_link)
+
+---
+
+## 🎯 Quick Start Example
+
+```bash
+# 1. Setup environment
+export JWT_TOKEN="your_jwt_token"
+export SERPER_API_KEY="your_serper_key"
+export EXA_API_KEY="your_exa_key"
+export GOOGLE_API_KEY="your_google_key"
+
+# 2. Start agents
+cd cli
+python cli.py run_agents
+
+# 3. Use in GenAI OS chat
+# "Please create a meeting briefing for: [your meeting details]"
+```
+
+**Your comprehensive meeting preparation system is ready! 🚀**
